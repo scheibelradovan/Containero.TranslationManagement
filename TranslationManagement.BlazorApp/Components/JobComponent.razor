@@ -1,0 +1,47 @@
+﻿@using TranslationManagement.Common.Model
+
+@if (_initialized)
+{
+    <div class="card">
+        <div class="rowDiv">
+            <div class="leftDiv">Id:</div>
+            <div class="rightDiv">@Item.Id</div>
+        </div>
+        <div class="rowDiv">
+            <div class="leftDiv">Customer name:</div>
+            <div class="rightDiv">@Item.CustomerName</div>
+        </div>
+        <div class="rowDiv">
+            <div class="leftDiv">Price:</div>
+            <div class="rightDiv">@Item.Price</div>
+        </div>
+        <div class="rowDiv">
+            <div class="leftDiv">Status:</div>
+            <div class="rightDiv">@Item.Status</div>
+        </div>
+        <div class="rowDiv">
+            <div class="leftDiv">Translated content:</div>
+            <div class="rightDiv">@Item.OriginalContent</div>
+        </div>
+        <div class="rowDiv">
+            <div class="leftDiv">Original content:</div>
+            <div class="rightDiv">@Item.TranslatedContent</div>
+        </div>
+    </div>
+}
+else
+{
+    <center>loading ...</center>
+}
+@code {
+    [Parameter]
+    public TranslationJob Item { get; set; }
+
+    private bool _initialized = false;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        _initialized = true;
+    }
+}

@@ -1,26 +1,17 @@
-﻿using System;
-using System.Linq;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System;
+using System.Linq;
+using TranslationManagement.Api.Db;
+using TranslationManagement.Common.Model;
 
-namespace TranslationManagement.Api.Controlers
+namespace TranslationManagement.Api.Controllers
 {
     [ApiController]
     [Route("api/TranslatorsManagement/[action]")]
     public class TranslatorManagementController : ControllerBase
     {
-        public class TranslatorModel
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public string HourlyRate { get; set; }
-            public string Status { get; set; }
-            public string CreditCardNumber { get; set; }
-        }
-
-        public static readonly string[] TranslatorStatuses = { "Applicant", "Certified", "Deleted" };
-
         private readonly ILogger<TranslatorManagementController> _logger;
         private AppDbContext _context;
 
@@ -31,38 +22,50 @@ namespace TranslationManagement.Api.Controlers
         }
 
         [HttpGet]
-        public TranslatorModel[] GetTranslators()
+        public Translator[] GetTranslators()
         {
             return _context.Translators.ToArray();
         }
 
         [HttpGet]
-        public TranslatorModel[] GetTranslatorsByName(string name)
+        public Translator[] GetTranslatorsByName(string name)
         {
             return _context.Translators.Where(t => t.Name == name).ToArray();
         }
 
         [HttpPost]
-        public bool AddTranslator(TranslatorModel translator)
+        public bool AddTranslator(Translator translator)
         {
             _context.Translators.Add(translator);
             return _context.SaveChanges() > 0;
         }
-        
+
         [HttpPost]
-        public string UpdateTranslatorStatus(int Translator, string newStatus = "")
+        public ApiResult UpdateTranslatorStatus(int translatorId, TranslatorStatus newStatus)
         {
-            _logger.LogInformation("User status update request: " + newStatus + " for user " + Translator.ToString());
-            if (TranslatorStatuses.Where(status => status == newStatus).Count() == 0)
+            try
             {
-                throw new ArgumentException("unknown status");
+                _logger.LogInformation($"User status update request: {newStatus} for user {translatorId}");
+                if (newStatus == 0)
+                {
+                    return ApiResult.CreateError("Unknown status!");
+                }
+
+                Translator translator = _context.Translators.Single(j => j.Id == translatorId);
+                if (translator == null)
+                {
+                    return ApiResult.CreateError("Translator was not found!");
+                }
+                translator.Status = newStatus;
+                _context.SaveChanges();
+
+                return ApiResult.Successfull;
             }
-
-            var job = _context.Translators.Single(j => j.Id == Translator);
-            job.Status = newStatus;
-            _context.SaveChanges();
-
-            return "updated";
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{nameof(UpdateTranslatorStatus)}(translatorId={translatorId}, newStatus={newStatus}) exception.");
+                return ApiResult.CreateError($"Unexpected exception: {ex.Message}");
+            }
         }
     }
 }

@@ -13,9 +13,10 @@ namespace TranslationManagement.Api.Migrations
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
                     CustomerName = table.Column<string>(type: "TEXT", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", nullable: true),
+                    Status = table.Column<string>(type: "INTEGER", nullable: true),
                     OriginalContent = table.Column<string>(type: "TEXT", nullable: true),
                     TranslatedContent = table.Column<string>(type: "TEXT", nullable: true),
+                    TranslatorId = table.Column<int>(type: "INTEGER", nullable: true),
                     Price = table.Column<double>(type: "REAL", nullable: false)
                 },
                 constraints: table =>
@@ -31,7 +32,7 @@ namespace TranslationManagement.Api.Migrations
                         .Annotation("Sqlite:Autoincrement", true),
                     Name = table.Column<string>(type: "TEXT", nullable: true),
                     HourlyRate = table.Column<string>(type: "TEXT", nullable: true),
-                    Status = table.Column<string>(type: "TEXT", nullable: true),
+                    Status = table.Column<int>(type: "INTEGER", nullable: true),
                     CreditCardNumber = table.Column<string>(type: "TEXT", nullable: true)
                 },
                 constraints: table =>

@@ -1,0 +1,44 @@
+﻿1. Datove typy v Db.
+	Toto je vecou konzultacie s analytikom. Pokial nie je zvlasny dovod, potom by som volil:
+	Tabulka Translator.
+		CreditCardNumber - Int64 - integer (vyzaduje v kode implementovat doplnanie nul na zaciatku - dlzka max 16)
+		HourlyRate - zmenit na float (alebo int) (vyzaduje novu polozku na menu)
+		Status - zmenil som na int. Na db urovni odporucam tiez podla databazy zaviest obmedzenia na hodnoty (emun).
+	Tabulka TranslationJob.
+		TODO
+
+2. ApiResult
+	Pre vsetky API metody by som zaviedol rovnaky navratovy objekt kvoli riesenie vynimiek.
+		ApiResult - Success - bool - metoda vykonana uspesne alebo s vynimkou.
+					Error - string - chybova hlaska
+					Result - navratova hodnota.
+		Umoznuje to implementovat na klientovy spracovanie (a logovanie) vynikiek/chyb na jednom mieste.
+	Implementovane pre TranslatorManagementController.UpdateJobStatus a TranslationJobController.UpdateJobStatus.
+
+3. Refaktoring
+	Kazda trieda ma vlastny subor.
+	Triedy (datove) spolocne pre API a GUI su v samostatnej dll-ke (projekt TranslationManagement.Common).
+
+4. Architektura
+	Aplikacia je mala. Chyba analyza. Menit architekturu nevidim dovod.
+	Pokial sa budu volat sluzby tretej strany, je relevatne voci implementacii,
+	ci budu tieto sluzby implementovat spolocne rozhranie (interface), alebo ... (chyba analyza).
+	Vobec nie je implementovany jazyk prekladu (z do).
+
+5. obchodné pravidlo: „na zákazkách môžu pracovať iba certifikovaní prekladatelia“
+	Nerozumiem. Ak prekladatelia musia byt certifikovany,
+	potom nema zmysel mat v systeme necertifikovanych prekladatelov!?
+	A teda vsetci su certifikovany a nema zmysel viest takuto polozku.
+
+6. Unit testy
+	Pridany projekt s unit testami. 2 metody pre pristup do 
+
+7. github
+	https://github.com/scheibelradovan/Containero.TranslationManagement
+	(Sukromne pouzivam SVN.)
+
+TODO
+	Zmeny v db cez GUI:
+	- možno len umožniť spravovať prekladateľov alebo vizualizovať stav úlohy
+	- implementovať koncové body, ktoré umožnia sledovať (nastaviť a získať),
+		ktorý prekladač pracuje na akej úlohe

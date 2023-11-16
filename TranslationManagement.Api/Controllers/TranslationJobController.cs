@@ -1,42 +1,25 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Xml;
-using System.Xml.Linq;
-using External.ThirdParty.Services;
+﻿using External.ThirdParty.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using TranslationManagement.Api.Controlers;
+using System;
+using System.IO;
+using System.Linq;
+using System.Xml.Linq;
+using TranslationManagement.Api.Db;
+using TranslationManagement.Common.Model;
 
 namespace TranslationManagement.Api.Controllers
 {
     [ApiController]
-    [Route("api/jobs/[action]")]
+    [Route("api/TranslationJob/[action]")]
     public class TranslationJobController : ControllerBase
     {
-        public class TranslationJob
-        {
-            public int Id { get; set; }
-            public string CustomerName { get; set; }
-            public string Status { get; set; }
-            public string OriginalContent { get; set; }
-            public string TranslatedContent { get; set; }
-            public double Price { get; set; }
-        }
-
-        static class JobStatuses
-        {
-            internal static readonly string New = "New";
-            internal static readonly string Inprogress = "InProgress";
-            internal static readonly string Completed = "Completed";
-        }
-
         private AppDbContext _context;
-        private readonly ILogger<TranslatorManagementController> _logger;
+        private readonly ILogger<TranslationJobController> _logger;
 
-        public TranslationJobController(IServiceScopeFactory scopeFactory, ILogger<TranslatorManagementController> logger)
+        public TranslationJobController(IServiceScopeFactory scopeFactory, ILogger<TranslationJobController> logger)
         {
             _context = scopeFactory.CreateScope().ServiceProvider.GetService<AppDbContext>();
             _logger = logger;
@@ -48,6 +31,18 @@ namespace TranslationManagement.Api.Controllers
             return _context.TranslationJobs.ToArray();
         }
 
+        [HttpGet]
+        public TranslationJob GetJob(int id)
+        {
+            return _context.TranslationJobs.FirstOrDefault(t => t.Id == id);
+        }
+
+        [HttpGet]
+        public TranslationJob[] etJobsByTranslator(int translatorId)
+        {
+            return _context.TranslationJobs.Where(t => t.TranslatorId == translatorId).ToArray();
+        }
+
         const double PricePerCharacter = 0.01;
         private void SetPrice(TranslationJob job)
         {
@@ -55,10 +50,37 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPost]
-        public bool CreateJob(TranslationJob job)
+        public ApiResult CreateJob(string customerName, string originalContent, int translatorId)
         {
-            job.Status = "New";
-            SetPrice(job);
+            try
+            {
+                if (String.IsNullOrWhiteSpace(customerName)) { return ApiResult.CreateError("customerName argument exception!"); }
+                if (String.IsNullOrWhiteSpace(originalContent)) { return ApiResult.CreateError("originalContent argument exception!"); }
+                if (translatorId == 0) { return ApiResult.CreateError("translatorId argument exception!"); }
+
+                TranslationJob job = new TranslationJob()
+                {
+                    CustomerName = customerName,
+                    Id = 0,
+                    OriginalContent = originalContent,
+                    Status = TranslationJobStatus.New,
+                    TranslatedContent = String.Empty,
+                    TranslatorId = translatorId
+                };
+                SetPrice(job);
+
+                bool result = CreateJob(job);
+                return new ApiResult<bool>(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"{nameof(CreateJob)}(customerName={customerName}, originalContent={originalContent}, translatorId={translatorId}) exception.");
+                return ApiResult.CreateError($"Unexpected exception: {ex.Message}");
+            }
+        }
+
+        private bool CreateJob(TranslationJob job)
+        {
             _context.TranslationJobs.Add(job);
             bool success = _context.SaveChanges() > 0;
             if (success)
@@ -108,26 +130,39 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPost]
-        public string UpdateJobStatus(int jobId, int translatorId, string newStatus = "")
+        public ApiResult UpdateJobStatus(int jobId, int translatorId, TranslationJobStatus newStatus)
         {
-            _logger.LogInformation("Job status update request received: " + newStatus + " for job " + jobId.ToString() + " by translator " + translatorId);
-            if (typeof(JobStatuses).GetProperties().Count(prop => prop.Name == newStatus) == 0)
+            try
             {
-                return "invalid status";
+                _logger.LogInformation($"Job status update request received: {newStatus} for job {jobId} by translator {translatorId}");
+                if (newStatus == 0)
+                {
+                    return ApiResult.CreateError("Invalid status!");
+                }
+
+                var job = _context.TranslationJobs.Single(j => j.Id == jobId);
+                if (job == null)
+                {
+                    return ApiResult.CreateError("Job was not found!");
+                }
+
+                bool isInvalidStatusChange = (job.Status == TranslationJobStatus.New && newStatus == TranslationJobStatus.Completed) ||
+                                             job.Status == TranslationJobStatus.Completed || newStatus == TranslationJobStatus.New;
+                if (isInvalidStatusChange)
+                {
+                    return ApiResult.CreateError("invalid status change");
+                }
+
+                job.Status = newStatus;
+                job.TranslatorId = translatorId;
+                _context.SaveChanges();
+                return ApiResult.Successfull;
             }
-
-            var job = _context.TranslationJobs.Single(j => j.Id == jobId);
-
-            bool isInvalidStatusChange = (job.Status == JobStatuses.New && newStatus == JobStatuses.Completed) ||
-                                         job.Status == JobStatuses.Completed || newStatus == JobStatuses.New;
-            if (isInvalidStatusChange)
+            catch (Exception ex)
             {
-                return "invalid status change";
+                _logger.LogError(ex, $"{nameof(UpdateJobStatus)}(jobId={jobId}, translatorId={translatorId}, newStatus={newStatus}) exception.");
+                return ApiResult.CreateError($"Unexpected exception: {ex.Message}");
             }
-
-            job.Status = newStatus;
-            _context.SaveChanges();
-            return "updated";
         }
     }
 }

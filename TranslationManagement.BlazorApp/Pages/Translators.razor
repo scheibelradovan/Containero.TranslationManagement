@@ -1,0 +1,39 @@
+﻿@page "/translators"
+@using TranslationManagement.BlazorApp.Components
+@using TranslationManagement.Common.Model
+@using System.Net.Http
+@inject HttpClient Http
+
+<PageTitle>Translators</PageTitle>
+
+<h1>Translators</h1>
+
+@if (translators is null)
+{
+    <p>No data loaded. Please try again later.</p>
+}
+else
+{
+    <div class="cardContainer">
+        @foreach (var translator in translators)
+        {
+            <TranslatorComponent Item=@translator />
+        }
+    </div>
+}
+
+@code {
+    private Translator[]? translators;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            translators = await Http.GetFromJsonAsync<Translator[]>("http://localhost:7729/api/TranslatorsManagement/GetTranslators");
+        }
+        catch (Exception)
+        {
+            
+        }
+    }
+}

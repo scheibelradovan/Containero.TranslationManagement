@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TranslationManagement.Api;
+using TranslationManagement.Api.Db;
 
 namespace TranslationManagement.Api.Migrations
 {
@@ -13,7 +13,7 @@ namespace TranslationManagement.Api.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.2");
+                .HasAnnotation("ProductVersion", "5.0.3");
 
             modelBuilder.Entity("TranslationManagement.Api.Controlers.TranslatorManagementController+TranslatorModel", b =>
                 {
@@ -31,14 +31,14 @@ namespace TranslationManagement.Api.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Status")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 
                     b.ToTable("Translators");
                 });
 
-            modelBuilder.Entity("TranslationManagement.Api.Controllers.TranslationJobController+TranslationJob", b =>
+            modelBuilder.Entity("TranslationManagement.Api.Controllers.TranslationJobController+TranslationJobModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -54,10 +54,13 @@ namespace TranslationManagement.Api.Migrations
                         .HasColumnType("REAL");
 
                     b.Property<string>("Status")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("INTEGER");
 
                     b.Property<string>("TranslatedContent")
                         .HasColumnType("TEXT");
+
+                    b.Property<int>("TranslatorId")
+                        .HasColumnType("INTEGER");
 
                     b.HasKey("Id");
 

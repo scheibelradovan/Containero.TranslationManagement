@@ -3,19 +3,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TranslationManagement.Api;
+using TranslationManagement.Api.Db;
 
 namespace TranslationManagement.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20210203102420_InitialCreate")]
+    [Migration("InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "5.0.2");
+                .HasAnnotation("ProductVersion", "5.0.3");
 
             modelBuilder.Entity("TranslationManagement.Api.Controlers.TranslatorManagementController+TranslatorModel", b =>
                 {
@@ -40,7 +40,7 @@ namespace TranslationManagement.Api.Migrations
                     b.ToTable("Translators");
                 });
 
-            modelBuilder.Entity("TranslationManagement.Api.Controllers.TranslationJobController+TranslationJob", b =>
+            modelBuilder.Entity("TranslationManagement.Api.Controllers.TranslationJobController+TranslationJobModel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

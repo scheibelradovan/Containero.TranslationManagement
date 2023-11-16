@@ -1,0 +1,46 @@
+﻿@page "/jobs"
+@using TranslationManagement.BlazorApp.Components
+@using TranslationManagement.Common.Model
+@using System.Net.Http
+@inject HttpClient Http
+
+<PageTitle>Translation jobs</PageTitle>
+
+<h1>Translators</h1>
+
+@if (exception != null)
+{
+    <p>@exception.Message</p>
+    <p>@exception.ToString()</p>
+}
+else if (jobs is null)
+{
+    <p>No data loaded. Please try again later.</p>
+}
+else
+{
+    <div class="cardContainer">
+        @foreach (var job in jobs)
+        {
+            <JobComponent Item=@job />
+        }
+    </div>
+}
+
+@code {
+    private TranslationJob[]? jobs;
+    private Exception exception = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        exception = null!;
+        try
+        {
+            jobs = await Http.GetFromJsonAsync<TranslationJob[]>("http://localhost:7729/api/TranslationJob/GetJobs");
+        }
+        catch (Exception e)
+        {
+            exception = e;
+        }
+    }
+}
