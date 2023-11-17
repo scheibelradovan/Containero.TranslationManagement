@@ -1,8 +1,16 @@
 ﻿@using TranslationManagement.Common.Model
+@using System.Net.Http
+@inject HttpClient Http
 
-@if (_initialized)
+<style>
+.it {
+    width: 90%;
+    accent-color: green;
+}
+</style>
+@if (_isInitialized)
 {
-    <div class="card">
+    <div class="card" @onclick="() => OnEditMode()">
         <div class="rowDiv">
             <div class="leftDiv">Id:</div>
             <div class="rightDiv">@Item.Id</div>
@@ -17,26 +25,79 @@
         </div>
         <div class="rowDiv">
             <div class="leftDiv">Status:</div>
-            <div class="rightDiv">@Item.Status</div>
+            <div class="rightDiv">
+                @if (_isEditMode)
+                {
+                        <InputSelect Value="@(_status)" ValueExpression="@(() => _status)"
+                                     class="it" ValueChanged="@((int id) => OnStatusChange(id))">
+                            @foreach (TranslatorStatus status in Enum.GetValues<TranslatorStatus>())
+                            {
+                                <option value="@((int)status)">@status</option>
+                            }
+                        </InputSelect>
+                }
+                else
+                {
+                    @Item.Status
+                }
+            </div>
         </div>
         <div class="rowDiv">
             <div class="leftDiv">Credit card:</div>
             <div class="rightDiv">@Item.CreditCardNumber</div>
         </div>
+        @if (_isChanged)
+        {
+            <div class="rowDiv">
+                <button @onclick="@OnSave" class="menuItem">Save</button>
+            </div>
+        }
     </div>
 }
 else
 {
     <center>loading ...</center>
 }
-@code {
+@code
+{
     [Parameter]
     public Translator Item { get; set; }
 
-    private bool _initialized = false;
+    private bool _isInitialized = false;
+    private bool _isChanged = false;
+    private bool _isEditMode = false;
+    protected int _status { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        _initialized = true;
+        _status = (int)Item.Status;
+        _isInitialized = true;
+    }
+
+    private void OnEditMode()
+    {
+        if (!_isEditMode)
+        {
+            _isEditMode = true;
+        }
+    }
+
+    protected void OnStatusChange(int id)
+    {
+        _status = id;
+        _isChanged = (int)Item.Status != id;
+    }
+
+    private void OnSave()
+    {
+        if (_isChanged)
+        {
+            _isEditMode = false;
+            _isChanged = false;
+            Item.Status = (TranslatorStatus)_status;
+
+            string request = $"http://localhost:7729/api/TranslatorsManagement/UpdateTranslatorStatus?translatorId={Item.Id}&newStatus={Item.Status}";
+            Http.PostAsync(request, null);
+        }
     }
 }

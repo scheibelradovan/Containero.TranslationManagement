@@ -20,7 +20,9 @@
 	Triedy (datove) spolocne pre API a GUI su v samostatnej dll-ke (projekt TranslationManagement.Common).
 
 4. Architektura
-	Aplikacia je mala. Chyba analyza. Menit architekturu nevidim dovod.
+	Aplikacia je mala. Chyba analyza. A tym chyba aj byznis logika.
+	(Nikde by mala byt definovana logika prechodu medzi stavmi a ktore polozky je mozne kedy a kym editovat.)
+	Menit architekturu nevidim dovod, pokial nie je jasne zadanie.
 	Pokial sa budu volat sluzby tretej strany, je relevatne voci implementacii,
 	ci budu tieto sluzby implementovat spolocne rozhranie (interface), alebo ... (chyba analyza).
 	Vobec nie je implementovany jazyk prekladu (z do).
@@ -31,14 +33,19 @@
 	A teda vsetci su certifikovany a nema zmysel viest takuto polozku.
 
 6. Unit testy
-	Pridany projekt s unit testami. 2 metody pre pristup do 
+	Pridany projekt s unit testami. 
 
 7. github
 	https://github.com/scheibelradovan/Containero.TranslationManagement
 	(Sukromne pouzivam SVN.)
+	Kod, VS2022, .NET 8. Otvorit a spustit cez F5. Mali by sa spustit API projekt a  BlazorApp projekt.
 
-TODO
-	Zmeny v db cez GUI:
-	- možno len umožniť spravovať prekladateľov alebo vizualizovať stav úlohy
-	- implementovať koncové body, ktoré umožnia sledovať (nastaviť a získať),
-		ktorý prekladač pracuje na akej úlohe
+8. Gui
+	- Stranka pre zobrazenie vsetkych Prekladatelov. Mozno editovat status.
+	- Stranka pre zobrazenie vsetkych Zadanmi. Mozno filtrovat podla prekladatela a statusu.
+		V kombe fitra su len existujuce polozky.
+
+9. SendNotification
+	Volanie je skryte v metode CreateJob.
+	Odporucam zaviest v db tabulku pre notifikacie. Po pridani novej ulohy (TranslationJob),
+	(alebo inej udalosti) by samostatna app posielala notifikacie (je nutne riesit stav zlyhania poslania notifikacie).

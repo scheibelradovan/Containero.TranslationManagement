@@ -38,7 +38,7 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpGet]
-        public TranslationJob[] etJobsByTranslator(int translatorId)
+        public TranslationJob[] GetJobsByTranslator(int translatorId)
         {
             return _context.TranslationJobs.Where(t => t.TranslatorId == translatorId).ToArray();
         }

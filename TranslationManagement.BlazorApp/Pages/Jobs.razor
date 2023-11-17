@@ -6,21 +6,23 @@
 
 <PageTitle>Translation jobs</PageTitle>
 
-<h1>Translators</h1>
+<h1>Translation jobs</h1>
 
-@if (exception != null)
+<FilterComponent @ref="_filter" OutputChanged="@OnFilterChaged" />
+
+@if (_exception != null)
 {
-    <p>@exception.Message</p>
-    <p>@exception.ToString()</p>
+    <p>@_exception.Message</p>
+    <p>@_exception.ToString()</p>
 }
-else if (jobs is null)
+else if (_jobsF is null)
 {
     <p>No data loaded. Please try again later.</p>
 }
 else
 {
     <div class="cardContainer">
-        @foreach (var job in jobs)
+        @foreach (var job in _jobsF)
         {
             <JobComponent Item=@job />
         }
@@ -28,19 +30,29 @@ else
 }
 
 @code {
-    private TranslationJob[]? jobs;
-    private Exception exception = null!;
+    private Exception _exception = null!;
+    private FilterComponent _filter = null!;
+    private TranslationJob[] _jobs = null!;
+    private TranslationJob[] _jobsF = null!;
 
     protected override async Task OnInitializedAsync()
     {
-        exception = null!;
+        _exception = null!;
         try
         {
-            jobs = await Http.GetFromJsonAsync<TranslationJob[]>("http://localhost:7729/api/TranslationJob/GetJobs");
+            _jobs = await Http.GetFromJsonAsync<TranslationJob[]>("http://localhost:7729/api/TranslationJob/GetJobs");
+            _jobsF = _jobs;
+            _filter.Initialize(_jobs);
         }
         catch (Exception e)
         {
-            exception = e;
+            _exception = e;
         }
+    }
+
+    private Task OnFilterChaged()
+    {
+        _jobsF = _filter.Output;
+        return Task.CompletedTask;
     }
 }

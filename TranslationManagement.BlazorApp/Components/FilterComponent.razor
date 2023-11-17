@@ -1,0 +1,86 @@
+﻿@using TranslationManagement.Common.Model
+
+<div class="parent">
+    <span style="margin:5px" />
+    Translator Id filter:
+    <InputSelect Value="@_translatorId" ValueExpression="@(() => _translatorId)" ValueChanged="@((int id) => OnIdChanged(id))">
+        @foreach (int id in _translatorIds)
+        {
+            <option value="@id">@id</option>
+        }
+    </InputSelect>
+    <span style="margin:20px" />
+    Status filter:
+    <InputSelect Value="@_status" ValueExpression="@(() => _status)" ValueChanged="@((TranslationJobStatus status) => OnStateChanged(status))">
+        @foreach (TranslationJobStatus state in _statuses)
+        {
+            <option value="@state">@state</option>
+        }
+    </InputSelect>
+</div>
+
+@code {
+    private TranslationJob[] _data = null!;
+    private int _translatorId = 0;
+    private List<int> _translatorIds = new List<int>();
+    private TranslationJobStatus _status = 0;
+    private List<TranslationJobStatus> _statuses = new List<TranslationJobStatus>();
+
+    public TranslationJob[] Output { get; set; }
+    [Parameter]
+    public EventCallback OutputChanged { get; set; }
+
+    public void Initialize(TranslationJob[] data)
+    {
+        _data = data;
+        Output = data;
+
+        @foreach (TranslationJob job in _data)
+        {
+            if (!_translatorIds.Contains(job.TranslatorId))
+            {
+                _translatorIds.Add(job.TranslatorId);
+            }
+            if (!_statuses.Contains(job.Status))
+            {
+                _statuses.Add(job.Status);
+            }
+        }
+    }
+    private void OnIdChanged(int id)
+    {
+        _translatorId = id;
+        Filter();
+    }
+    private void OnStateChanged(TranslationJobStatus status)
+    {
+        _status = status;
+        Filter();
+    }
+    private void Filter()
+    {
+        if (_translatorId == 0)
+        {
+            if (_status == 0)
+            {
+                Output = _data;
+            }
+            else
+            {
+                Output = _data.Where(x => x.Status == _status).ToArray();
+            }
+        }
+        else
+        {
+            if (_status == 0)
+            {
+                Output = _data.Where(x => x.TranslatorId == _translatorId).ToArray();
+            }
+            else
+            {
+                Output = _data.Where(x => x.TranslatorId == _translatorId && x.Status == _status).ToArray();
+            }
+        }
+        OutputChanged.InvokeAsync();
+    }
+}

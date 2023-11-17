@@ -21,7 +21,7 @@
 	margin: 0;
 	padding: 0 5px 0 0;
 	text-align: right;
-	width: 40%;
+	width: 36%;
 }
 .rightDiv {
 	display: inline-block;
@@ -30,5 +30,5 @@
 	padding: 0 0 0 5px;
 	text-align: left;
 	font-weight: bold;
-	width: 58%;
+	width: 62%;
 }
