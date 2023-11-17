@@ -25,6 +25,7 @@ namespace TranslationManagement.Api.Controllers
             _logger = logger;
         }
 
+
         [HttpGet]
         public TranslationJob[] GetJobs()
         {
@@ -97,7 +98,7 @@ namespace TranslationManagement.Api.Controllers
         }
 
         [HttpPost]
-        public bool CreateJobWithFile(IFormFile file, string customer)
+        public ApiResult CreateJobWithFile(IFormFile file, string customer)
         {
             var reader = new StreamReader(file.OpenReadStream());
             string content;
